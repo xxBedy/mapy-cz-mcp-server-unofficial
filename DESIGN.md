@@ -67,7 +67,7 @@ Celé API používá **longitude první**. LLM téměř vždy píše `lat,lon` (
 skončí trasa „Praha → Brno" uprostřed Indického oceánu a odpověď bude vypadat validně.
 
 **Protiopatření:** schémata nástrojů **nikdy nepřijímají pole `[x, y]`**, jen pojmenovaná pole `lat` / `lon`.
-Převod do pořadí API je v jediné funkci `toApiCoord()`. Navíc heuristika: pokud bod padne mimo pevninu, ale po prohození
+Převod do pořadí API je v jediné funkci `to_api_coord()`. Navíc heuristika: pokud bod padne mimo pevninu, ale po prohození
 padne do ČR/SK, vrátí se ve výsledku `warnings: ["possible_lat_lon_swap"]` — **nikdy tichá autokorekce**.
 
 ### 3.2 Matice vrací chybové kódy jako čísla
@@ -187,18 +187,22 @@ trasa s 1 000 body = 4 volání = **16 kreditů místo 4**. Cena je vidět dopř
 
 Klíčové rozhodnutí. Nástroje pracující s body přijímají sjednocený typ:
 
-```ts
-const Place = z.union([
-  z.string().describe('Název místa nebo adresa, např. "Brno, náměstí Svobody"'),
-  z.object({
-    lat: z.number().min(-90).max(90).describe('Zeměpisná šířka'),
-    lon: z.number().min(-180).max(180).describe('Zeměpisná délka'),
-  }),
-]);
+```python
+class Coord(BaseModel):
+    lat: float = Field(ge=-90, le=90, description="Zeměpisná šířka")
+    lon: float = Field(ge=-180, le=180, description="Zeměpisná délka")
+
+Place = Annotated[
+    str | Coord,
+    Field(description='Název místa ("Brno, náměstí Svobody") nebo souřadnice'),
+]
 ```
 
-`resolvePlace()` řetězec geokóduje (+4 kredity, uvedeno ve výsledku), objekt propustí. Model tak zvládne
+`resolve_place()` řetězec geokóduje (+4 kredity, uvedeno ve výsledku), `Coord` propustí. Model tak zvládne
 „naplánuj trasu z Prahy do Brna" jedním voláním místo tří.
+
+Pydantic tu dělá dvě věci najednou: odvodí JSON schéma nástroje ze signatury (nemusí se psát ručně)
+a zároveň je to runtime validace vstupu od modelu — což je přesně vrstva, kde se zachytí past §3.1.
 
 ### 5.2 Statická mapa: nulová matematika
 
@@ -208,13 +212,16 @@ viewport nafitne na markery. Běžný případ „ukaž mapu s těmito body" nev
 Markery a tvary mají netriviální řetězcovou syntaxi (`color:red;size:large;label:AB;14.42,50.08`).
 Nástroj bere strukturovaná data a řetězec sestaví sám:
 
-```ts
-markers: z.array(z.object({
-  lat: z.number(), lon: z.number(),
-  label: z.string().max(2).optional(),
-  color: z.string().optional(),        // název barvy nebo #RRGGBB(AA)
-  size: z.enum(['small','normal','large']).optional(),
-})).max(50).optional()
+```python
+class Marker(BaseModel):
+    lat: float = Field(ge=-90, le=90)
+    lon: float = Field(ge=-180, le=180)
+    label: str | None = Field(None, max_length=2)
+    color: str | None = None                      # název barvy nebo #RRGGBB(AA)
+    size: Literal["small", "normal", "large"] | None = None
+
+# v signatuře nástroje:
+markers: Annotated[list[Marker], Field(max_length=50)] | None = None
 ```
 
 Pozn.: markery s **různým** nastavením musí jít do samostatných opakovaných parametrů `markers`,
@@ -222,24 +229,30 @@ ne do jednoho seznamu — builder je proto seskupuje podle stylu.
 
 ### 5.3 Obrázky do kontextu
 
-`mapy_static_map` a `mapy_panorama` vracejí `ImageContent` (base64 PNG/JPEG/WebP). Model mapu vidí.
+`mapy_static_map` a `mapy_panorama` vracejí `Image(data=..., format="jpeg")` z `mcp.server.mcpserver`,
+což SDK převede na `ImageContent`. Model mapu vidí.
 Rozpočet kontextu ale rozhoduje: **default 640×480 `jpg`** (≈ 60–120 kB base64), ne API maximum 1024×1024 `png` @2x.
 Parametr `output: "image" | "file" | "url"` — `file` uloží na disk a vrátí cestu (pro velké výstupy),
 `url` vrátí jen sestavené URL (nula kreditů, nula tokenů, ale klíč v URL — proto **ne default**).
 
 ### 5.4 Trasa
 
-```ts
-{
-  start: Place, end: Place,
-  via: z.array(Place).max(15).optional(),        // limit API
-  routeType: z.enum([...]).default('car_fast'),
-  avoidToll: z.boolean().optional(),
-  avoidHighways: z.boolean().optional(),
-  departure: z.string().datetime().optional(),   // pro car_fast_traffic
-  geometry: z.enum(['none','polyline','geojson']).default('none'),
-}
+```python
+@server.tool()
+async def mapy_route(
+    start: Place,
+    end: Place,
+    route_type: RouteType = "car_fast",
+    via: Annotated[list[Place], Field(max_length=15)] | None = None,   # limit API
+    avoid_toll: bool = False,
+    avoid_highways: bool = False,
+    departure: datetime | None = None,                # jen pro car_fast_traffic
+    geometry: Literal["none", "polyline", "geojson"] = "none",
+) -> RouteSummary: ...
 ```
+
+Návratový typ je Pydantic model, takže SDK vedle textu vydá i strukturovaný výstup — tvarování z §7
+se tím dělá deklarativně v modelu, ne ručním serializováním.
 
 `departure` + `car_fast_traffic` je jediná cesta k dotazu „kdy mám vyjet" — v popisu nástroje to musí být explicitně,
 jinak model sáhne po `car_fast` a dopravu ignoruje.
@@ -319,42 +332,66 @@ Pravidlo: **default je souhrn, detail na vyžádání.** Každý nástroj má `r
 
 ## 8. Architektura
 
-TypeScript, Node ≥ 20, `@modelcontextprotocol/sdk`, `zod`. Transport `stdio` (default) + volitelně streamable HTTP.
-Distribuce přes `npx mapy-cz-mcp-server-unofficial`.
+### 8.1 Volba jazyka
+
+**Python ≥ 3.10, oficiální SDK `mcp` 2.x, `pydantic`, `httpx`.** Transport `stdio` (default) + volitelně
+streamable HTTP. Distribuce přes `uvx mapy-cz-mcp-server-unofficial`.
+
+Rozvaha (ověřeno proti registrům 30. 8. 2026): obě oficiální SDK jsou plnohodnotná, ale `mcp` 2.1.1 (PyPI,
+25. 8. 2026) je na novějším majoru a vydává rychleji než `@modelcontextprotocol/sdk` 1.30.0 (npm, 27. 7. 2026).
+Rozhodly dvě věci:
+
+- **Pydantic odvodí schéma nástroje ze signatury.** Proti ručně psanému zodu je to méně kódu na stejnou věc
+  a zároveň runtime validace vstupu od modelu — tedy přesně ta vrstva, kde se chytá past §3.1.
+- **Distribuce je nerozhodně.** `uvx` je v konfigurech MCP klientů stejně standardní zápis jako `npx`,
+  takže argument, který by jinak mluvil pro TypeScript, tu nehraje.
+
+Poctivá poznámka k tomu, co *nerozhodlo*: nabízelo se sáhnout po `shapely`/`pyproj`/`numpy` na geometrii z §4.2.
+Při bližším pohledu je to ale ~100 řádků kódu tak či tak a u nástroje instalovaného přes `uvx` váží tyhle
+závislosti víc, než přinesou. **Geometrie bude čistý Python bez těžkých závislostí.**
+
+> **Past SDK, ne API.** V `mcp` 2.x byla třída `FastMCP` přejmenována na `MCPServer`
+> (`from mcp.server.mcpserver import MCPServer`). Starý import `from mcp.server.fastmcp import FastMCP`
+> je v1 API a dnes padá s `ModuleNotFoundError`, které odkazuje na migrační guide. Většina tutoriálů
+> ukazuje ještě starý tvar. Pozor i na jmennou kolizi: balík **`fastmcp`** na PyPI (3.4.7, PrefectHQ)
+> je samostatný framework, ne oficiální SDK — tenhle projekt ho nepoužívá.
+
+### 8.2 Rozvržení
 
 ```
-src/
-  index.ts              # bin entry, volba transportu, graceful start bez klíče
-  server.ts             # registrace tools/resources/prompts
-  config.ts             # env, zod-validované, redakce klíče
+src/mapy_mcp/
+  __main__.py           # entry point, volba transportu, graceful start bez klíče
+  server.py             # MCPServer(...), registrace @server.tool/resource/prompt
+  config.py             # pydantic-settings, redakce klíče
   http/
-    client.ts           # fetch: hlavička, timeout, retry, correlation id
-    errors.ts           # HTTP + errorCode → akční hlášky (§6.3)
-    ratelimit.ts        # token bucket per skupina (§6.2)
-    credits.ts          # účtování + strop (§6.4)
-  tools/                # 9 nástrojů, každý = schéma + handler + shaper
+    client.py           # httpx.AsyncClient: hlavička, timeout, retry, correlation id
+    errors.py           # HTTP + errorCode → akční hlášky (§6.3)
+    ratelimit.py        # token bucket per skupina (§6.2)
+    credits.py          # účtování + strop (§6.4)
+  tools/                # 9 nástrojů, každý = signatura + handler + návratový model
   resources/            # 5 resources
   prompts/              # 3 prompty
   lib/
-    coords.ts           # toApiCoord(), validace, detekce prohození (§3.1)
-    place.ts            # resolvePlace(): název | souřadnice → souřadnice (§5.1)
-    polyline.ts         # dekódování polyline / polyline6
-    resample.ts         # geometrie → ≤ 256 ekvidistantních bodů (§4.2)
-    markers.ts          # strukturovaná data → řetězcová syntaxe (§5.2)
-    shape.ts            # tvarování odpovědí (§7)
+    coords.py           # to_api_coord(), validace, detekce prohození (§3.1)
+    place.py            # resolve_place(): název | souřadnice → souřadnice (§5.1)
+    polyline.py         # dekódování polyline / polyline6
+    resample.py         # geometrie → ≤ 256 ekvidistantních bodů (§4.2)
+    markers.py          # strukturovaná data → řetězcová syntaxe (§5.2)
+    shape.py            # návratové Pydantic modely (§7)
+pyproject.toml          # [project.scripts] mapy-cz-mcp-server-unofficial
 ```
 
-Klíčová vlastnost rozvržení: **pořadí souřadnic žije jen v `coords.ts`**, tvarování odpovědí jen v `shape.ts`.
+Klíčová vlastnost rozvržení: **pořadí souřadnic žije jen v `coords.py`**, tvarování odpovědí jen v `shape.py`.
 Nejnebezpečnější třída chyb je tak omezená na jeden soubor s vlastními testy.
 
 ---
 
 ## 9. Testování a CI
 
-- **Kontraktní testy** proti uloženým fixtures (`msw`) — bez spotřeby kreditů, běží na každý push.
+- **Kontraktní testy** proti uloženým fixtures (`pytest` + `respx`) — bez spotřeby kreditů, běží na každý push.
 - **Hlídač driftu API:** CI job stáhne všech 7 OpenAPI specifikací a porovná je s uloženým snapshotem.
   Změna v API = failnutý build s diffem. Specifikace jsou veřejně dostupné, takže to stojí jeden `curl` — nečekat, až se něco rozbije v produkci.
-- **Smoke test** s reálným klíčem (`npm run smoke`, ~30 kreditů) — ruční / nightly, ne v PR.
+- **Smoke test** s reálným klíčem (`uv run smoke`, ~30 kreditů) — ruční / nightly, ne v PR.
 - **Cílené testy pastí:** prohození lat/lon, `-100000.0` v elevation, `-3` v matici, `403` s nezapnutou službou.
 
 ---
@@ -372,8 +409,8 @@ Nejnebezpečnější třída chyb je tak omezená na jeden soubor s vlastními t
 
 | Fáze | Obsah |
 |---|---|
-| **M1 — kostra** | `client.ts`, `errors.ts`, `coords.ts`, `mapy_geocode`, `mapy_reverse_geocode` |
-| **M2 — jádro** | `mapy_route`, `mapy_elevation`, `mapy_timezone`, `shape.ts`, kredity |
-| **M3 — vizuál** | `mapy_static_map`, `mapy_panorama`, `markers.ts`, atribuce |
-| **M4 — kompozice** | `mapy_route_matrix`, `mapy_elevation_profile`, `resample.ts`, prompty |
-| **M5 — vydání** | Hlídač driftu, README, publikace na npm |
+| **M1 — kostra** | `client.py`, `errors.py`, `coords.py`, `mapy_geocode`, `mapy_reverse_geocode` |
+| **M2 — jádro** | `mapy_route`, `mapy_elevation`, `mapy_timezone`, `shape.py`, kredity |
+| **M3 — vizuál** | `mapy_static_map`, `mapy_panorama`, `markers.py`, atribuce |
+| **M4 — kompozice** | `mapy_route_matrix`, `mapy_elevation_profile`, `resample.py`, prompty |
+| **M5 — vydání** | Hlídač driftu, README, publikace na PyPI |
