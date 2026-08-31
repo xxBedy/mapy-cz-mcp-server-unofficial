@@ -1,0 +1,1095 @@
+{
+  "commons": {
+    "operations": {
+      "GET /v1/example": {
+        "parameters": {},
+        "response200": null
+      }
+    },
+    "security": {
+      "headerApiKey": {
+        "in": "header",
+        "name": "X-MAPY-API-KEY"
+      },
+      "queryApiKey": {
+        "in": "query",
+        "name": "apiKey"
+      }
+    },
+    "servers": [
+      "https://api.mapy.com"
+    ]
+  },
+  "elevation": {
+    "operations": {
+      "GET /v1/elevation": {
+        "parameters": {
+          "lang": {
+            "default": "cs",
+            "enum": [
+              "cs",
+              "de",
+              "el",
+              "en",
+              "es",
+              "fr",
+              "it",
+              "nl",
+              "pl",
+              "pt",
+              "ru",
+              "sk",
+              "tr",
+              "uk"
+            ],
+            "in": "query",
+            "required": false,
+            "type": null
+          },
+          "positions": {
+            "in": "query",
+            "maxItems": 256,
+            "minItems": 1,
+            "required": true,
+            "type": "array"
+          }
+        },
+        "response200": {
+          "items": [
+            {
+              "elevation": "number",
+              "position": {
+                "lat": "number",
+                "lon": "number"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "security": {
+      "headerApiKey": {
+        "in": "header",
+        "name": "X-Mapy-Api-Key"
+      },
+      "queryApiKey": {
+        "in": "query",
+        "name": "apikey"
+      }
+    },
+    "servers": [
+      "https://api.mapy.com/",
+      "https://api.mapy.cz/"
+    ]
+  },
+  "geocode": {
+    "operations": {
+      "GET /v1/geocode": {
+        "parameters": {
+          "lang": {
+            "default": "cs",
+            "enum": [
+              "cs",
+              "de",
+              "el",
+              "en",
+              "es",
+              "fr",
+              "it",
+              "nl",
+              "pl",
+              "pt",
+              "ru",
+              "sk",
+              "tr",
+              "uk"
+            ],
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          "limit": {
+            "default": 5,
+            "in": "query",
+            "required": false,
+            "type": "integer"
+          },
+          "locality": {
+            "in": "query",
+            "required": false,
+            "type": "array"
+          },
+          "preferBBox": {
+            "in": "query",
+            "maxItems": 4,
+            "minItems": 4,
+            "required": false,
+            "type": "array"
+          },
+          "preferNear": {
+            "in": "query",
+            "maxItems": 2,
+            "minItems": 2,
+            "required": false,
+            "type": "array"
+          },
+          "preferNearPrecision": {
+            "in": "query",
+            "minimum": 0.0,
+            "required": false,
+            "type": "number"
+          },
+          "query": {
+            "default": "",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          "type": {
+            "default": [
+              "regional",
+              "poi"
+            ],
+            "enum": [
+              "coordinate",
+              "poi",
+              "regional",
+              "regional.address",
+              "regional.country",
+              "regional.municipality",
+              "regional.municipality_part",
+              "regional.region",
+              "regional.street"
+            ],
+            "in": "query",
+            "required": false,
+            "type": "array"
+          }
+        },
+        "response200": {
+          "items": [
+            {
+              "bbox": [
+                "number"
+              ],
+              "label": "string",
+              "location": "string",
+              "name": "string",
+              "position": {
+                "lat": "number",
+                "lon": "number"
+              },
+              "regionalStructure": [
+                {
+                  "isoCode": "...",
+                  "name": "...",
+                  "type": "..."
+                }
+              ],
+              "type": null,
+              "zip": "string"
+            }
+          ],
+          "locality": [
+            "object"
+          ]
+        }
+      },
+      "GET /v1/rgeocode": {
+        "parameters": {
+          "lang": {
+            "default": "cs",
+            "enum": [
+              "cs",
+              "de",
+              "el",
+              "en",
+              "es",
+              "fr",
+              "it",
+              "nl",
+              "pl",
+              "pt",
+              "ru",
+              "sk",
+              "tr",
+              "uk"
+            ],
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          "lat": {
+            "in": "query",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "required": true,
+            "type": "number"
+          },
+          "lon": {
+            "in": "query",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "required": true,
+            "type": "number"
+          }
+        },
+        "response200": {
+          "items": [
+            {
+              "bbox": [
+                "number"
+              ],
+              "label": "string",
+              "location": "string",
+              "name": "string",
+              "position": {
+                "lat": "number",
+                "lon": "number"
+              },
+              "regionalStructure": [
+                {
+                  "isoCode": "...",
+                  "name": "...",
+                  "type": "..."
+                }
+              ],
+              "type": null,
+              "zip": "string"
+            }
+          ]
+        }
+      },
+      "GET /v1/suggest": {
+        "parameters": {
+          "lang": {
+            "default": "cs",
+            "enum": [
+              "cs",
+              "de",
+              "el",
+              "en",
+              "es",
+              "fr",
+              "it",
+              "nl",
+              "pl",
+              "pt",
+              "ru",
+              "sk",
+              "tr",
+              "uk"
+            ],
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          "limit": {
+            "default": 5,
+            "in": "query",
+            "required": false,
+            "type": "integer"
+          },
+          "locality": {
+            "in": "query",
+            "required": false,
+            "type": "array"
+          },
+          "preferBBox": {
+            "in": "query",
+            "maxItems": 4,
+            "minItems": 4,
+            "required": false,
+            "type": "array"
+          },
+          "preferNear": {
+            "in": "query",
+            "maxItems": 2,
+            "minItems": 2,
+            "required": false,
+            "type": "array"
+          },
+          "preferNearPrecision": {
+            "in": "query",
+            "minimum": 0.0,
+            "required": false,
+            "type": "number"
+          },
+          "query": {
+            "default": "",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          "type": {
+            "default": [
+              "regional",
+              "poi"
+            ],
+            "enum": [
+              "coordinate",
+              "poi",
+              "regional",
+              "regional.address",
+              "regional.country",
+              "regional.municipality",
+              "regional.municipality_part",
+              "regional.region",
+              "regional.street"
+            ],
+            "in": "query",
+            "required": false,
+            "type": "array"
+          }
+        },
+        "response200": {
+          "items": [
+            {
+              "bbox": [
+                "number"
+              ],
+              "label": "string",
+              "location": "string",
+              "name": "string",
+              "position": {
+                "lat": "number",
+                "lon": "number"
+              },
+              "regionalStructure": [
+                {
+                  "isoCode": "...",
+                  "name": "...",
+                  "type": "..."
+                }
+              ],
+              "type": null,
+              "zip": "string"
+            }
+          ],
+          "locality": [
+            "object"
+          ]
+        }
+      }
+    },
+    "security": {
+      "headerApiKey": {
+        "in": "header",
+        "name": "X-Mapy-Api-Key"
+      },
+      "queryApiKey": {
+        "in": "query",
+        "name": "apikey"
+      }
+    },
+    "servers": [
+      "https://api.mapy.com/",
+      "https://api.mapy.cz/"
+    ]
+  },
+  "maptiles": {
+    "operations": {
+      "GET /v1/maptiles/{mapset}/tiles.json": {
+        "parameters": {
+          "lang": {
+            "default": "cs",
+            "enum": [
+              "cs",
+              "de",
+              "el",
+              "en",
+              "es",
+              "fr",
+              "it",
+              "nl",
+              "pl",
+              "pt",
+              "ru",
+              "sk",
+              "tr",
+              "uk"
+            ],
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          "mapset": {
+            "enum": [
+              "aerial",
+              "basic",
+              "names-overlay",
+              "outdoor",
+              "winter"
+            ],
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        },
+        "response200": {
+          "attribution": "string",
+          "bounds": [
+            "number"
+          ],
+          "center": [
+            "number"
+          ],
+          "data": [
+            "string"
+          ],
+          "description": "string",
+          "grids": [
+            "string"
+          ],
+          "legend": "string",
+          "maxzoom": "integer",
+          "minzoom": "integer",
+          "name": "string",
+          "scheme": "string",
+          "template": "string",
+          "tilejson": "string",
+          "tiles": [
+            "string"
+          ],
+          "version": "string"
+        }
+      },
+      "GET /v1/maptiles/{mapset}/{tileSize}/{z}/{x}/{y}": {
+        "parameters": {
+          "lang": {
+            "default": "cs",
+            "enum": [
+              "cs",
+              "de",
+              "el",
+              "en",
+              "es",
+              "fr",
+              "it",
+              "nl",
+              "pl",
+              "pt",
+              "ru",
+              "sk",
+              "tr",
+              "uk"
+            ],
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          "mapset": {
+            "enum": [
+              "aerial",
+              "basic",
+              "names-overlay",
+              "outdoor",
+              "winter"
+            ],
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          "tileSize": {
+            "enum": [
+              "256",
+              "256@2x"
+            ],
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          "x": {
+            "in": "path",
+            "minimum": 0,
+            "required": true,
+            "type": "integer"
+          },
+          "y": {
+            "in": "path",
+            "minimum": 0,
+            "required": true,
+            "type": "integer"
+          },
+          "z": {
+            "in": "path",
+            "maximum": 20,
+            "minimum": 0,
+            "required": true,
+            "type": "integer"
+          }
+        },
+        "response200": null
+      }
+    },
+    "security": {
+      "headerApikey": {
+        "in": "header",
+        "name": "X-Mapy-Api-Key"
+      },
+      "queryApikey": {
+        "in": "query",
+        "name": "apikey"
+      }
+    },
+    "servers": [
+      "https://api.mapy.com",
+      "https://api.mapy.cz"
+    ]
+  },
+  "routing": {
+    "operations": {
+      "GET /v1/routing/matrix-m": {
+        "parameters": {
+          "avoidToll": {
+            "default": false,
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          "ends": {
+            "in": "query",
+            "maxItems": 100,
+            "minItems": 0,
+            "required": false,
+            "type": "array"
+          },
+          "lang": {
+            "default": "cs",
+            "enum": [
+              "cs",
+              "de",
+              "el",
+              "en",
+              "es",
+              "fr",
+              "it",
+              "nl",
+              "pl",
+              "pt",
+              "ru",
+              "sk",
+              "tr",
+              "uk"
+            ],
+            "in": "query",
+            "required": false,
+            "type": null
+          },
+          "routeType": {
+            "enum": [
+              "bike_mountain",
+              "bike_road",
+              "car_fast",
+              "car_fast_traffic",
+              "car_short",
+              "foot_fast",
+              "foot_hiking"
+            ],
+            "in": "query",
+            "required": true,
+            "type": null
+          },
+          "starts": {
+            "in": "query",
+            "maxItems": 100,
+            "minItems": 1,
+            "required": true,
+            "type": "array"
+          }
+        },
+        "response200": null
+      },
+      "GET /v1/routing/route": {
+        "parameters": {
+          "avoidHighways": {
+            "default": false,
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          "avoidToll": {
+            "default": false,
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          "departure": {
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          "end": {
+            "in": "query",
+            "maxItems": 2,
+            "minItems": 2,
+            "required": true,
+            "type": "array"
+          },
+          "format": {
+            "default": "geojson",
+            "enum": [
+              "geojson",
+              "polyline",
+              "polyline6"
+            ],
+            "in": "query",
+            "required": false,
+            "type": null
+          },
+          "lang": {
+            "default": "cs",
+            "enum": [
+              "cs",
+              "de",
+              "el",
+              "en",
+              "es",
+              "fr",
+              "it",
+              "nl",
+              "pl",
+              "pt",
+              "ru",
+              "sk",
+              "tr",
+              "uk"
+            ],
+            "in": "query",
+            "required": false,
+            "type": null
+          },
+          "routeType": {
+            "enum": [
+              "bike_mountain",
+              "bike_road",
+              "car_fast",
+              "car_fast_traffic",
+              "car_short",
+              "foot_fast",
+              "foot_hiking"
+            ],
+            "in": "query",
+            "required": true,
+            "type": null
+          },
+          "start": {
+            "in": "query",
+            "maxItems": 2,
+            "minItems": 2,
+            "required": true,
+            "type": "array"
+          },
+          "waypoints": {
+            "in": "query",
+            "maxItems": 15,
+            "minItems": 0,
+            "required": false,
+            "type": "array"
+          }
+        },
+        "response200": null
+      }
+    },
+    "security": {
+      "headerApiKey": {
+        "in": "header",
+        "name": "X-Mapy-Api-Key"
+      },
+      "queryApiKey": {
+        "in": "query",
+        "name": "apikey"
+      }
+    },
+    "servers": [
+      "https://api.mapy.com/",
+      "https://api.mapy.cz/"
+    ]
+  },
+  "static": {
+    "operations": {
+      "GET /v1/static/map": {
+        "parameters": {
+          "debug": {
+            "default": false,
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          "format": {
+            "enum": [
+              "gif",
+              "jpg",
+              "png",
+              "webp"
+            ],
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          "height": {
+            "in": "query",
+            "maximum": 1024,
+            "minimum": 10,
+            "required": true,
+            "type": "integer"
+          },
+          "lang": {
+            "enum": [
+              "cs",
+              "de",
+              "el",
+              "en",
+              "es",
+              "fr",
+              "it",
+              "nl",
+              "pl",
+              "pt",
+              "ru",
+              "sk",
+              "tr",
+              "uk"
+            ],
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          "lat": {
+            "in": "query",
+            "maxItems": 2,
+            "minItems": 1,
+            "required": false,
+            "type": "array"
+          },
+          "lon": {
+            "in": "query",
+            "maxItems": 2,
+            "minItems": 1,
+            "required": false,
+            "type": "array"
+          },
+          "mapset": {
+            "enum": [
+              "aerial",
+              "aerial-names-overlay",
+              "basic",
+              "outdoor",
+              "winter"
+            ],
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          "markers": {
+            "in": "query",
+            "required": false,
+            "type": "array"
+          },
+          "padding": {
+            "default": 40,
+            "in": "query",
+            "maximum": 1024,
+            "minimum": 0,
+            "required": false,
+            "type": "integer"
+          },
+          "scale": {
+            "default": 1,
+            "in": "query",
+            "maximum": 2,
+            "minimum": 1,
+            "required": false,
+            "type": "integer"
+          },
+          "shapes": {
+            "in": "query",
+            "required": false,
+            "type": "array"
+          },
+          "width": {
+            "in": "query",
+            "maximum": 1024,
+            "minimum": 10,
+            "required": true,
+            "type": "integer"
+          },
+          "zoom": {
+            "in": "query",
+            "required": false,
+            "type": null
+          }
+        },
+        "response200": null
+      },
+      "GET /v1/static/pano": {
+        "parameters": {
+          "debug": {
+            "default": false,
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          "fov": {
+            "default": 1.5,
+            "in": "query",
+            "maximum": 1.57,
+            "minimum": 0.16,
+            "required": false,
+            "type": "number"
+          },
+          "height": {
+            "in": "query",
+            "maximum": 1024,
+            "minimum": 10,
+            "required": true,
+            "type": "integer"
+          },
+          "lang": {
+            "enum": [
+              "cs",
+              "de",
+              "el",
+              "en",
+              "es",
+              "fr",
+              "it",
+              "nl",
+              "pl",
+              "pt",
+              "ru",
+              "sk",
+              "tr",
+              "uk"
+            ],
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          "lat": {
+            "in": "query",
+            "maximum": 90,
+            "minimum": -90,
+            "required": false,
+            "type": "number"
+          },
+          "lon": {
+            "in": "query",
+            "maximum": 180,
+            "minimum": -180,
+            "required": false,
+            "type": "number"
+          },
+          "pitch": {
+            "default": -0.066,
+            "in": "query",
+            "maximum": 1.5,
+            "minimum": -1.5,
+            "required": false,
+            "type": "number"
+          },
+          "radius": {
+            "default": 50.0,
+            "in": "query",
+            "maximum": 100,
+            "minimum": 0,
+            "required": false,
+            "type": "number"
+          },
+          "width": {
+            "in": "query",
+            "maximum": 1024,
+            "minimum": 10,
+            "required": true,
+            "type": "integer"
+          },
+          "yaw": {
+            "default": "auto",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        },
+        "response200": null
+      }
+    },
+    "security": {
+      "headerApiKey": {
+        "in": "header",
+        "name": "X-Mapy-Api-Key"
+      },
+      "queryApiKey": {
+        "in": "query",
+        "name": "apikey"
+      }
+    },
+    "servers": [
+      "https://api.mapy.com/",
+      "https://api.mapy.cz/"
+    ]
+  },
+  "timezone": {
+    "operations": {
+      "GET /v1/timezone/coordinate": {
+        "parameters": {
+          "lang": {
+            "default": "cs",
+            "enum": [
+              "cs",
+              "de",
+              "el",
+              "en",
+              "es",
+              "fr",
+              "it",
+              "nl",
+              "pl",
+              "pt",
+              "ru",
+              "sk",
+              "tr",
+              "uk"
+            ],
+            "in": "query",
+            "required": false,
+            "type": null
+          },
+          "lat": {
+            "in": "query",
+            "maximum": 90,
+            "minimum": -90,
+            "required": true,
+            "type": "number"
+          },
+          "lon": {
+            "in": "query",
+            "maximum": 180,
+            "minimum": -180,
+            "required": true,
+            "type": "number"
+          }
+        },
+        "response200": {
+          "timezone": {
+            "currentLocalTime": "string",
+            "currentTimeAbbreviation": "string",
+            "currentUtcOffsetSeconds": "integer",
+            "currentUtcTime": "string",
+            "dstInfo": {
+              "dstAbbreviation": "string",
+              "dstDurationSeconds": "integer",
+              "dstEndLocalTime": "string",
+              "dstEndUtcTime": "string",
+              "dstOffsetSeconds": "integer",
+              "dstStartLocalTime": "string",
+              "dstStartUtcTime": "string"
+            },
+            "hasDst": "boolean",
+            "isDstActive": "boolean",
+            "standardTimeAbbreviation": "string",
+            "standardUtcOffsetSeconds": "integer",
+            "timezoneName": "string"
+          }
+        }
+      },
+      "GET /v1/timezone/list-timezones": {
+        "parameters": {
+          "lang": {
+            "default": "cs",
+            "enum": [
+              "cs",
+              "de",
+              "el",
+              "en",
+              "es",
+              "fr",
+              "it",
+              "nl",
+              "pl",
+              "pt",
+              "ru",
+              "sk",
+              "tr",
+              "uk"
+            ],
+            "in": "query",
+            "required": false,
+            "type": null
+          }
+        },
+        "response200": {
+          "timezones": [
+            "string"
+          ]
+        }
+      },
+      "GET /v1/timezone/timezone": {
+        "parameters": {
+          "lang": {
+            "default": "cs",
+            "enum": [
+              "cs",
+              "de",
+              "el",
+              "en",
+              "es",
+              "fr",
+              "it",
+              "nl",
+              "pl",
+              "pt",
+              "ru",
+              "sk",
+              "tr",
+              "uk"
+            ],
+            "in": "query",
+            "required": false,
+            "type": null
+          },
+          "timezone": {
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        },
+        "response200": {
+          "timezone": {
+            "currentLocalTime": "string",
+            "currentTimeAbbreviation": "string",
+            "currentUtcOffsetSeconds": "integer",
+            "currentUtcTime": "string",
+            "dstInfo": {
+              "dstAbbreviation": "string",
+              "dstDurationSeconds": "integer",
+              "dstEndLocalTime": "string",
+              "dstEndUtcTime": "string",
+              "dstOffsetSeconds": "integer",
+              "dstStartLocalTime": "string",
+              "dstStartUtcTime": "string"
+            },
+            "hasDst": "boolean",
+            "isDstActive": "boolean",
+            "standardTimeAbbreviation": "string",
+            "standardUtcOffsetSeconds": "integer",
+            "timezoneName": "string"
+          }
+        }
+      }
+    },
+    "security": {
+      "headerApiKey": {
+        "in": "header",
+        "name": "X-Mapy-Api-Key"
+      },
+      "queryApiKey": {
+        "in": "query",
+        "name": "apikey"
+      }
+    },
+    "servers": [
+      "https://api.mapy.com/",
+      "https://api.mapy.cz/"
+    ]
+  }
+}

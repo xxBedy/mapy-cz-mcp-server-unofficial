@@ -259,9 +259,7 @@ def create_server() -> MCPServer:
         ),
     )
     async def mapy_static_map(
-        center: Annotated[
-            Coord | None, Field(description="Střed mapy. Vyžaduje i zoom.")
-        ] = None,
+        center: Annotated[Coord | None, Field(description="Střed mapy. Vyžaduje i zoom.")] = None,
         zoom: Annotated[int | None, Field(ge=1, le=19, description="Úroveň přiblížení.")] = None,
         bbox: Annotated[
             list[Coord] | None,

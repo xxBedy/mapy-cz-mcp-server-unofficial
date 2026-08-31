@@ -15,8 +15,15 @@ from mapy_mcp.lib.coords import Coord
 from mapy_mcp.lib.place import resolve_place
 from mapy_mcp.tools.routing import route
 
-PRAHA = {"items": [{"name": "Praha", "location": "Hlavní město Praha",
-                    "position": {"lon": 14.4213, "lat": 50.0874}}]}
+PRAHA = {
+    "items": [
+        {
+            "name": "Praha",
+            "location": "Hlavní město Praha",
+            "position": {"lon": 14.4213, "lat": 50.0874},
+        }
+    ]
+}
 
 
 @respx.mock
@@ -30,9 +37,7 @@ async def test_coordinates_pass_through_without_geocoding(client):
 
 @respx.mock
 async def test_text_is_geocoded_and_billed(client):
-    respx.get("https://api.mapy.com/v1/geocode").mock(
-        return_value=httpx.Response(200, json=PRAHA)
-    )
+    respx.get("https://api.mapy.com/v1/geocode").mock(return_value=httpx.Response(200, json=PRAHA))
     resolved = await resolve_place(client, "Praha")
 
     assert resolved.credits == COST_GEOCODE
@@ -53,9 +58,7 @@ async def test_unfound_place_says_what_to_do(client):
 
 @respx.mock
 async def test_route_by_name_reports_full_cost(client):
-    respx.get("https://api.mapy.com/v1/geocode").mock(
-        return_value=httpx.Response(200, json=PRAHA)
-    )
+    respx.get("https://api.mapy.com/v1/geocode").mock(return_value=httpx.Response(200, json=PRAHA))
     respx.get("https://api.mapy.com/v1/routing/route").mock(
         return_value=httpx.Response(200, json={"length": 205000, "duration": 7200})
     )
@@ -102,10 +105,18 @@ async def test_bare_city_name_beats_similarly_named_poi(client):
             200,
             json={
                 "items": [
-                    {"name": "Brněnská přehrada", "type": "poi", "location": "Brno, Česko",
-                     "position": {"lon": 16.5, "lat": 49.23}},
-                    {"name": "Brno", "type": "regional.municipality", "location": "Česko",
-                     "position": {"lon": 16.6068, "lat": 49.1951}},
+                    {
+                        "name": "Brněnská přehrada",
+                        "type": "poi",
+                        "location": "Brno, Česko",
+                        "position": {"lon": 16.5, "lat": 49.23},
+                    },
+                    {
+                        "name": "Brno",
+                        "type": "regional.municipality",
+                        "location": "Česko",
+                        "position": {"lon": 16.6068, "lat": 49.1951},
+                    },
                 ]
             },
         )
@@ -122,10 +133,18 @@ async def test_poi_query_still_resolves_to_the_poi(client):
             200,
             json={
                 "items": [
-                    {"name": "Brněnská přehrada", "type": "poi", "location": "Brno, Česko",
-                     "position": {"lon": 16.5, "lat": 49.23}},
-                    {"name": "Brno", "type": "regional.municipality", "location": "Česko",
-                     "position": {"lon": 16.6068, "lat": 49.1951}},
+                    {
+                        "name": "Brněnská přehrada",
+                        "type": "poi",
+                        "location": "Brno, Česko",
+                        "position": {"lon": 16.5, "lat": 49.23},
+                    },
+                    {
+                        "name": "Brno",
+                        "type": "regional.municipality",
+                        "location": "Česko",
+                        "position": {"lon": 16.6068, "lat": 49.1951},
+                    },
                 ]
             },
         )
@@ -139,11 +158,16 @@ async def test_no_exact_match_keeps_api_ranking(client):
     respx.get("https://api.mapy.com/v1/geocode").mock(
         return_value=httpx.Response(
             200,
-            json={"items": [
-                {"name": "Sněžka (1603 m)", "type": "poi",
-                 "position": {"lon": 15.7396, "lat": 50.736}},
-                {"name": "Sněžník", "type": "poi", "position": {"lon": 14.0, "lat": 50.8}},
-            ]},
+            json={
+                "items": [
+                    {
+                        "name": "Sněžka (1603 m)",
+                        "type": "poi",
+                        "position": {"lon": 15.7396, "lat": 50.736},
+                    },
+                    {"name": "Sněžník", "type": "poi", "position": {"lon": 14.0, "lat": 50.8}},
+                ]
+            },
         )
     )
     resolved = await resolve_place(client, "Sněžka")
@@ -161,12 +185,22 @@ async def test_exact_poi_match_does_not_beat_api_ranking(client):
     respx.get("https://api.mapy.com/v1/geocode").mock(
         return_value=httpx.Response(
             200,
-            json={"items": [
-                {"name": "Sněžka (1603 m)", "type": "poi", "location": "Pec pod Sněžkou, Česko",
-                 "position": {"lon": 15.7396, "lat": 50.73602}},
-                {"name": "Sněžka", "type": "poi", "location": "Hradec Králové, Česko",
-                 "position": {"lon": 15.83, "lat": 50.21}},
-            ]},
+            json={
+                "items": [
+                    {
+                        "name": "Sněžka (1603 m)",
+                        "type": "poi",
+                        "location": "Pec pod Sněžkou, Česko",
+                        "position": {"lon": 15.7396, "lat": 50.73602},
+                    },
+                    {
+                        "name": "Sněžka",
+                        "type": "poi",
+                        "location": "Hradec Králové, Česko",
+                        "position": {"lon": 15.83, "lat": 50.21},
+                    },
+                ]
+            },
         )
     )
     resolved = await resolve_place(client, "Sněžka")

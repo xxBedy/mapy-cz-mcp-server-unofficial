@@ -11,7 +11,20 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 Lang = Literal["cs", "de", "el", "en", "es", "fr", "it", "nl", "pl", "pt", "ru", "sk", "tr", "uk"]
 
 LANGUAGES: tuple[str, ...] = (
-    "cs", "de", "el", "en", "es", "fr", "it", "nl", "pl", "pt", "ru", "sk", "tr", "uk",
+    "cs",
+    "de",
+    "el",
+    "en",
+    "es",
+    "fr",
+    "it",
+    "nl",
+    "pl",
+    "pt",
+    "ru",
+    "sk",
+    "tr",
+    "uk",
 )
 
 
@@ -23,8 +36,7 @@ class Settings(BaseSettings):
     api_key: str | None = Field(
         default=None,
         description=(
-            "API klíč z developer.mapy.com. Bez něj server nastartuje, "
-            "ale nástroje vrátí chybu."
+            "API klíč z developer.mapy.com. Bez něj server nastartuje, ale nástroje vrátí chybu."
         ),
     )
     default_lang: Lang = "cs"

@@ -57,8 +57,11 @@ async def test_422_names_the_bad_parameter(client):
             422,
             json={
                 "detail": [
-                    {"loc": ["query", "limit"], "msg": "ensure this value is less than 16",
-                     "type": "value_error"}
+                    {
+                        "loc": ["query", "limit"],
+                        "msg": "ensure this value is less than 16",
+                        "type": "value_error",
+                    }
                 ]
             },
         )

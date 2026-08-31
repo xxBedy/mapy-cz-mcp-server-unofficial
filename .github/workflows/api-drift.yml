@@ -1,0 +1,61 @@
+name: Hlídač REST API Mapy.com
+
+# Specifikace API jsou veřejné, takže nemá smysl čekat, až se něco rozbije
+# v produkci. Když se rozhraní změní, workflow spadne a založí issue s diffem.
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"   # každé pondělí ráno
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "api-fingerprint.json"
+      - "scripts/api_drift.py"
+      - ".github/workflows/api-drift.yml"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalace uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Instalace závislostí
+        run: uv sync --extra dev
+
+      - name: Porovnání s otiskem
+        id: check
+        run: |
+          set +e
+          uv run python scripts/api_drift.py > drift.txt 2>&1
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          cat drift.txt
+
+      - name: Založení issue při změně
+        if: steps.check.outputs.exit_code == '1' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="REST API Mapy.com se změnilo"
+          # Existuje-li otevřené issue, přidá se komentář místo duplicity.
+          existing=$(gh issue list --state open --search "$title in:title" \
+            --json number --jq '.[0].number // empty')
+          body=$(printf '%s\n\n```\n%s\n```\n' \
+            "Hlídač zjistil rozdíl mezi rozhraním API a uloženým otiskem. Projděte změny, upravte server a obnovte otisk příkazem \`uv run python scripts/api_drift.py --update\`." \
+            "$(cat drift.txt)")
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body" --label "api-drift" || \
+              gh issue create --title "$title" --body "$body"
+          fi
+
+      - name: Selhat při změně
+        if: steps.check.outputs.exit_code != '0'
+        run: exit 1

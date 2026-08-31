@@ -29,7 +29,6 @@ PlaceInput: TypeAlias = Annotated[
 ]
 
 
-
 def pick_best(query: str, items: list[dict]) -> dict:
     """Vybere z výsledků geokódování ten, který volající nejspíš myslel.
 

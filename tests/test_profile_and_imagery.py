@@ -58,13 +58,14 @@ async def test_elevation_profile_computes_ascent_and_descent(client):
     respx.get("https://api.mapy.com/v1/elevation").mock(
         return_value=httpx.Response(
             200,
-            json={"items": [{"elevation": e, "position": {"lon": 14.0, "lat": 50.0}}
-                            for e in elevations]},
+            json={
+                "items": [
+                    {"elevation": e, "position": {"lon": 14.0, "lat": 50.0}} for e in elevations
+                ]
+            },
         )
     )
-    result = await elevation_profile(
-        client, Coord(lat=50.0, lon=14.0), Coord(lat=50.3, lon=14.0)
-    )
+    result = await elevation_profile(client, Coord(lat=50.0, lon=14.0), Coord(lat=50.3, lon=14.0))
 
     assert result.ascent_m == 200
     assert result.descent_m == 100

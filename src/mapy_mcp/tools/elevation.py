@@ -157,12 +157,7 @@ async def elevation_profile(
     if accuracy == "fast" and len(points) > MAX_POSITIONS_PER_CALL:
         note += " Pro přesnější odhad použijte accuracy='detailed' (víc volání, víc kreditů)."
 
-    credits = (
-        COST_ROUTING
-        + calls * COST_ELEVATION
-        + start_place.credits
-        + end_place.credits
-    )
+    credits = COST_ROUTING + calls * COST_ELEVATION + start_place.credits + end_place.credits
     warnings = [w for w in (start_place.warning, end_place.warning) if w]
 
     return ElevationProfileResult(

@@ -1,0 +1,50 @@
+name: Vydání na PyPI
+
+# Spouští se tagem verze (v0.1.0). Publikuje se přes PyPI Trusted Publishing,
+# takže v repozitáři není potřeba žádný token — jen jednorázové nastavení
+# vydavatele na straně PyPI, viz README, sekce Vydání.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/mapy-cz-mcp-server-unofficial
+    permissions:
+      id-token: write   # nutné pro Trusted Publishing
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalace uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Ověření, že tag odpovídá verzi v pyproject.toml
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF#refs/tags/v}"
+          version=$(uv run python -c "import tomllib,pathlib; \
+            print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
+          if [ "$tag" != "$version" ]; then
+            echo "Tag v$tag neodpovídá verzi $version v pyproject.toml." >&2
+            exit 1
+          fi
+          echo "Tag i verze souhlasí: $version"
+
+      - name: Sestavení
+        run: uv build
+
+      - name: Publikace na PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

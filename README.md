@@ -87,12 +87,54 @@ vaše aplikace — každá ne-obrázková odpověď proto nese pole `attribution
 
 ```bash
 uv sync --extra dev
-uv run pytest                    # kontraktní testy, nespotřebují kredity
-uv run ruff check src tests
-uv run python -m mapy_mcp        # spuštění na stdio
+uv run pytest                          # testy proti fixtures, bez kreditů
+uv run ruff check src tests scripts
+uv run ruff format src tests scripts
+uv run python -m mapy_mcp              # spuštění na stdio
 ```
 
-Testy běží proti uloženým fixtures přes `respx`, takže nepotřebují API klíč ani nespotřebovávají kredity.
+Testy běží proti uloženým fixtures přes `respx`, takže nepotřebují API klíč
+ani nespotřebovávají kredity.
+
+## Hlídač změn v API
+
+Specifikace REST API Mapy.com jsou veřejné, takže nemá smysl čekat, až se něco
+rozbije v produkci:
+
+```bash
+uv run python scripts/api_drift.py            # porovná se souborem api-fingerprint.json
+uv run python scripts/api_drift.py --update   # po zapracování změn obnoví otisk
+```
+
+V `api-fingerprint.json` je uložený **otisk povrchu API** — cesty, parametry,
+jejich typy, enumerace a limity, plus schéma autentizace. Není to kopie
+specifikací, ale odvozený popis rozhraní, takže diff ukazuje přesně to, na čem
+tomuhle serveru záleží.
+
+Workflow `Hlídač REST API Mapy.com` běží každé pondělí. Když se rozhraní změní,
+job spadne a založí issue s diffem (nebo přidá komentář k už otevřenému).
+
+## Vydání
+
+Publikuje se přes [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/),
+takže v repozitáři není žádný API token.
+
+Jednorázové nastavení:
+
+1. Na PyPI založte projekt `mapy-cz-mcp-server-unofficial` a v jeho nastavení
+   přidejte vydavatele: repozitář `xxBedy/mapy-cz-mcp-server-unofficial`,
+   workflow `release.yml`, prostředí `pypi`.
+2. V GitHubu vytvořte prostředí `pypi` (Settings → Environments).
+
+Každé další vydání:
+
+```bash
+# 1. zvedněte version v pyproject.toml
+# 2. otagujte — tag musí odpovídat verzi, jinak workflow spadne
+git tag v0.1.0 && git push origin v0.1.0
+```
+
+Workflow `release.yml` spustí celé CI, sestaví balíček a publikuje ho.
 
 ## Licence
 

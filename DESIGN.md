@@ -413,7 +413,11 @@ Nejnebezpečnější třída chyb je tak omezená na jeden soubor s vlastními t
 | **M2 — jádro** | `mapy_route`, `mapy_elevation`, `mapy_timezone`, `shape.py`, kredity | hotovo |
 | **M3 — vizuál** | `mapy_static_map`, `mapy_panorama`, `markers.py`, atribuce | hotovo |
 | **M4 — kompozice** | `mapy_route_matrix`, `mapy_elevation_profile`, `resample.py`, prompty | hotovo |
-| **M5 — vydání** | hlídač driftu, README, publikace na PyPI | README hotové, zbytek zbývá |
+| **M5 — vydání** | hlídač driftu, README, publikace na PyPI | hotovo mimo samotnou publikaci ¹ |
+
+¹ Publikace na PyPI vyžaduje jednorázové nastavení Trusted Publishing na straně PyPI a GitHubu,
+což nejde udělat z repozitáře — postup je v README, sekci Vydání. Workflow `release.yml` je
+připravené a spustí se tagem `v*`.
 
 ---
 
@@ -444,3 +448,11 @@ Retry původně pokrýval jen HTTP stavy a timeouty. Přechodné `ConnectError`
 (proxy, DNS, reset) přitom spolehlivě projdou na druhý pokus, takže patří
 do stejné smyčky. `ConnectError` navíc bývá bez textu — hláška proto doplňuje
 aspoň typ výjimky, jinak uživatel čte jen „spojení selhalo: “.
+
+### 12.4 Otisk API musí rozbalit `$ref` dřív, než sáhne na jméno
+
+Hlídač driftu z §9 nejdřív bral jméno parametru z nerozbaleného zápisu.
+Parametry zadané přes `$ref` tak spadly pod společný klíč `"None"` a vzájemně
+se přepsaly — u `maptiles`, kde se takhle sdílí `mapset` i `lang`, otisk oba
+parametry ztratil a jejich změnu by nikdy nenahlásil. Hlídač, který mlčí,
+je horší než žádný. Chybu odhalil test na rozbalování referencí, ne čtení kódu.
