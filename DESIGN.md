@@ -407,10 +407,40 @@ Nejnebezpečnější třída chyb je tak omezená na jeden soubor s vlastními t
 
 ## 11. Milníky
 
-| Fáze | Obsah |
-|---|---|
-| **M1 — kostra** | `client.py`, `errors.py`, `coords.py`, `mapy_geocode`, `mapy_reverse_geocode` |
-| **M2 — jádro** | `mapy_route`, `mapy_elevation`, `mapy_timezone`, `shape.py`, kredity |
-| **M3 — vizuál** | `mapy_static_map`, `mapy_panorama`, `markers.py`, atribuce |
-| **M4 — kompozice** | `mapy_route_matrix`, `mapy_elevation_profile`, `resample.py`, prompty |
-| **M5 — vydání** | Hlídač driftu, README, publikace na PyPI |
+| Fáze | Obsah | Stav |
+|---|---|---|
+| **M1 — kostra** | `client.py`, `errors.py`, `coords.py`, `mapy_geocode`, `mapy_reverse_geocode` | hotovo |
+| **M2 — jádro** | `mapy_route`, `mapy_elevation`, `mapy_timezone`, `shape.py`, kredity | hotovo |
+| **M3 — vizuál** | `mapy_static_map`, `mapy_panorama`, `markers.py`, atribuce | hotovo |
+| **M4 — kompozice** | `mapy_route_matrix`, `mapy_elevation_profile`, `resample.py`, prompty | hotovo |
+| **M5 — vydání** | hlídač driftu, README, publikace na PyPI | README hotové, zbytek zbývá |
+
+---
+
+## 12. Co se ukázalo až při implementaci
+
+Tři věci, které rešerše specifikací odhalit nemohla — vyplavaly z volání živého API.
+
+### 12.1 Geokodér řadí POI nad obec
+
+Na dotaz `Brno` vrací API jako první bod zájmu **Brněnská přehrada** a teprve druhé
+je město. Trasa „Praha → Brno“ tak vedla k přehradě. Řeší to `pick_best()` v `place.py`:
+povyšuje se přesná shoda názvu, ale **jen když je to územní celek**.
+
+To zúžení je podstatné. První, širší verze pravidla povyšovala každou přesnou shodu
+a rozbila dotaz `Sněžka`: přesnou shodou je totiž POI v Hradci Králové, zatímco hora
+se jmenuje `Sněžka (1603 m)` a API ji správně řadí první. Obě situace teď kryje test.
+
+### 12.2 Chyby v resources potřebují `ResourceError`
+
+MCP SDK zabalí libovolnou výjimku z resource handleru do `UnexpectedResourceError`
+a klientovi pošle jen generické „Error creating resource from template“. Pečlivě
+napsaná hláška se tím ztratí. Resources proto vyhazují `ResourceError`,
+respektive `ResourceNotFoundError`, které SDK propustí i s textem.
+
+### 12.3 Výpadky spojení se vyplatí opakovat
+
+Retry původně pokrýval jen HTTP stavy a timeouty. Přechodné `ConnectError`
+(proxy, DNS, reset) přitom spolehlivě projdou na druhý pokus, takže patří
+do stejné smyčky. `ConnectError` navíc bývá bez textu — hláška proto doplňuje
+aspoň typ výjimky, jinak uživatel čte jen „spojení selhalo: “.

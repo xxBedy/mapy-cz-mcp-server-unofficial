@@ -1,0 +1,58 @@
+[project]
+name = "mapy-cz-mcp-server-unofficial"
+version = "0.1.0"
+description = "Neoficiální MCP server pro REST API Mapy.com — geokódování, plánování tras, výškový profil, statické mapy a panoramata."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "xxBedy" }]
+keywords = ["mcp", "model-context-protocol", "mapy.com", "geocoding", "routing", "maps"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+
+dependencies = [
+    "mcp>=2.0,<3",
+    "pydantic>=2.12",
+    "pydantic-settings>=2.5",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "respx>=0.21",
+    "ruff>=0.6",
+]
+
+[project.urls]
+Homepage = "https://github.com/xxBedy/mapy-cz-mcp-server-unofficial"
+Issues = "https://github.com/xxBedy/mapy-cz-mcp-server-unofficial/issues"
+
+[project.scripts]
+mapy-cz-mcp-server-unofficial = "mapy_mcp.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mapy_mcp"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
