@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest a new tool, option, or improvement
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: "Thanks for the idea! 🇨🇿 Klidně piš česky."
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / use case
+      description: What are you trying to do that the server doesn't support yet?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What tool, parameter, or behaviour would solve it? Link the relevant Mapy.com API endpoint if any.
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false

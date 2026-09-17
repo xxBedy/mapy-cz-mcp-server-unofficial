@@ -9,3 +9,6 @@ build/
 .env
 .env.*
 uv.lock
+
+# generated trip-plan artifacts
+out/

@@ -1,21 +1,28 @@
-# Mapy.com MCP Server (neoficiální)
+# Mapy.com MCP Server (unofficial)
 
-MCP server nad [REST API Mapy.com](https://developer.mapy.com/cs/rest-api/) — geokódování, plánování tras,
-maticové plánování, nadmořská výška, výškový profil trasy, statické mapy, panoramata a časové zóny.
+*🇬🇧 English · 🇨🇿 [Čeština](README.cs.md)*
 
-> **Neoficiální projekt.** Není produktem ani službou Seznam.cz a.s. Mapová data © Seznam.cz a.s. a další.
+[![CI](https://github.com/xxBedy/mapy-cz-mcp-server-unofficial/actions/workflows/ci.yml/badge.svg)](https://github.com/xxBedy/mapy-cz-mcp-server-unofficial/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/mapy-cz-mcp-server-unofficial)](https://pypi.org/project/mapy-cz-mcp-server-unofficial/)
+[![Python](https://img.shields.io/pypi/pyversions/mapy-cz-mcp-server-unofficial)](https://pypi.org/project/mapy-cz-mcp-server-unofficial/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Návrh a rozbor API včetně zjištěných pastí je v [DESIGN.md](DESIGN.md).
+An MCP server for the [Mapy.com REST API](https://developer.mapy.com/en/rest-api/) — geocoding, route
+planning, distance matrices, elevation, route elevation profiles, static maps, panoramas and time zones.
 
-## Instalace
+> **Unofficial project.** Not a product or service of Seznam.cz a.s. Map data © Seznam.cz a.s. and others.
 
-Potřebujete API klíč z [developer.mapy.com](https://developer.mapy.com/account/). V portálu musí být pro klíč
-povolené služby, které chcete používat — jinak API vrací `403` i s platným klíčem.
+The design write-up and the API pitfalls it works around are in [DESIGN.md](DESIGN.md).
+
+## Installation
+
+You need an API key from [developer.mapy.com](https://developer.mapy.com/account/). The key must have the
+services you intend to use enabled in the portal — otherwise the API returns `403` even with a valid key.
 
 ### Claude Code
 
 ```bash
-claude mcp add mapy --env MAPY_API_KEY=váš_klíč -- uvx mapy-cz-mcp-server-unofficial
+claude mcp add mapy --env MAPY_API_KEY=your_key -- uvx mapy-cz-mcp-server-unofficial
 ```
 
 ### Claude Desktop
@@ -26,117 +33,122 @@ claude mcp add mapy --env MAPY_API_KEY=váš_klíč -- uvx mapy-cz-mcp-server-un
     "mapy": {
       "command": "uvx",
       "args": ["mapy-cz-mcp-server-unofficial"],
-      "env": { "MAPY_API_KEY": "váš_klíč" }
+      "env": { "MAPY_API_KEY": "your_key" }
     }
   }
 }
 ```
 
-## Nástroje
+## Tools
 
-| Nástroj | Co dělá | Kredity |
+| Tool | What it does | Credits |
 |---|---|---|
-| `mapy_geocode` | Najde místo podle názvu nebo adresy (`mode="suggest"` pro našeptávání) | 4 |
-| `mapy_reverse_geocode` | Zjistí adresu a regionální strukturu pro souřadnice | 4 |
-| `mapy_route` | Naplánuje trasu mezi místy, volitelně přes průjezdní body | 4 + geokódování |
-| `mapy_route_matrix` | Matice vzdáleností a časů mezi více body (max 100 buněk) | ~0,4 / buňku |
-| `mapy_elevation` | Nadmořská výška pro až 256 bodů | 4 |
-| `mapy_elevation_profile` | Výškový profil trasy: převýšení, klesání, sparkline | 8+ |
-| `mapy_static_map` | Obrázek mapy s markery a tvary — model ho vidí | 4 |
-| `mapy_panorama` | Panoramatický snímek z místa | 4 |
-| `mapy_timezone` | Časové pásmo, místní čas a posun | 1 |
+| `mapy_geocode` | Find a place by name or address (`mode="suggest"` for autocomplete) | 4 |
+| `mapy_reverse_geocode` | Resolve an address and regional structure for coordinates | 4 |
+| `mapy_route` | Plan a route between places, optionally via waypoints | 4 + geocoding |
+| `mapy_route_matrix` | Distance/time matrix between multiple points (max 100 cells) | ~0.4 / cell |
+| `mapy_elevation` | Elevation for up to 256 points | 4 |
+| `mapy_elevation_profile` | Route elevation profile: ascent, descent, sparkline | 8+ |
+| `mapy_static_map` | A map image with markers and shapes — the model can see it | 4 |
+| `mapy_panorama` | A panoramic image from a place | 4 |
+| `mapy_timezone` | Time zone, local time and offset | 1 |
 
-Všechny nástroje pracující se souřadnicemi přijímají **název místa i souřadnice**:
-`start="Praha"` funguje stejně jako `start={"lat": 50.087, "lon": 14.421}`.
+Every coordinate-taking tool accepts **either a place name or coordinates**:
+`start="Prague"` works the same as `start={"lat": 50.087, "lon": 14.421}`.
 
 ## Resources
 
-| URI | Obsah |
+| URI | Contents |
 |---|---|
-| `mapy://attribution` | Povinné znění atribuce a pravidla zobrazení loga |
-| `mapy://mapsets` | Sady map pro statickou mapu a pro dlaždice |
-| `mapy://timezones` | Seznam IANA časových pásem |
-| `mapy://tilejson/{mapset}` | TileJSON pro klienta renderujícího vlastní mapu |
-| `mapy://usage` | Kredity spotřebované v této session |
+| `mapy://attribution` | Required attribution text and logo-display rules |
+| `mapy://mapsets` | Map sets for static maps and for tiles |
+| `mapy://timezones` | List of IANA time zones |
+| `mapy://tilejson/{mapset}` | TileJSON for a client rendering its own map |
+| `mapy://usage` | Credits spent in this session |
 
-## Prompty
+## Prompts
 
-`naplanuj-vylet`, `porovnej-trasy`, `kde-to-je`.
+`naplanuj-vylet` (plan a trip), `porovnej-trasy` (compare routes), `kde-to-je` (where is it).
 
-## Konfigurace
+## Configuration
 
-| Proměnná | Default | Význam |
+| Variable | Default | Meaning |
 |---|---|---|
-| `MAPY_API_KEY` | — | API klíč (povinný pro volání, ne pro start serveru) |
-| `MAPY_DEFAULT_LANG` | `cs` | Jazyk odpovědí |
-| `MAPY_CREDIT_BUDGET` | — | Strop kreditů na session; po překročení nástroje odmítnou volat |
-| `MAPY_BASE_URL` | `https://api.mapy.com` | Základní URL API |
-| `MAPY_TIMEOUT` | `20.0` | Timeout požadavku v sekundách |
-| `MAPY_IMAGE_DIR` | dočasný adresář | Kam ukládat obrázky při `output="file"` |
+| `MAPY_API_KEY` | — | API key (required for calls, not for starting the server) |
+| `MAPY_DEFAULT_LANG` | `cs` | Response language |
+| `MAPY_CREDIT_BUDGET` | — | Per-session credit ceiling; tools refuse to call once exceeded |
+| `MAPY_BASE_URL` | `https://api.mapy.com` | API base URL |
+| `MAPY_TIMEOUT` | `20.0` | Request timeout in seconds |
+| `MAPY_IMAGE_DIR` | temp dir | Where to save images for `output="file"` |
 
-Klíč se posílá **výhradně v hlavičce** `X-Mapy-Api-Key`, nikdy v URL — nedostane se tak do logů ani historie.
+The key is sent **only in the `X-Mapy-Api-Key` header**, never in the URL — so it stays out of logs and
+history.
 
-## Atribuce
+## Attribution
 
-Použití dat z API je podmíněné [zobrazením atribuce](https://developer.mapy.com/rest-api-mapy-cz/atribution/).
-Statické mapy a panoramata mají atribuci vypálenou v obrázku. U geokódování a plánování ji musí zobrazit
-vaše aplikace — každá ne-obrázková odpověď proto nese pole `attribution` a plné znění je v resource
-`mapy://attribution`.
+Using data from the API requires [displaying attribution](https://developer.mapy.com/en/rest-api-mapy-cz/atribution/).
+Static maps and panoramas have attribution burned into the image. For geocoding and routing your application
+must display it — every non-image response therefore carries an `attribution` field, and the full text is in
+the `mapy://attribution` resource.
 
-## Vývoj
+## Development
 
 ```bash
 uv sync --extra dev
-uv run pytest                          # testy proti fixtures, bez kreditů
+uv run pytest                          # tests run against fixtures, no credits
 uv run ruff check src tests scripts
 uv run ruff format src tests scripts
-uv run python -m mapy_mcp              # spuštění na stdio
+uv run python -m mapy_mcp              # run on stdio
 ```
 
-Testy běží proti uloženým fixtures přes `respx`, takže nepotřebují API klíč
-ani nespotřebovávají kredity.
+Tests run against stored fixtures via `respx`, so they need no API key and spend no credits.
 
-## Hlídač změn v API
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide.
 
-Specifikace REST API Mapy.com jsou veřejné, takže nemá smysl čekat, až se něco
-rozbije v produkci:
+## API drift watcher
+
+The Mapy.com REST API specs are public, so there's no reason to wait for something to break in production:
 
 ```bash
-uv run python scripts/api_drift.py            # porovná se souborem api-fingerprint.json
-uv run python scripts/api_drift.py --update   # po zapracování změn obnoví otisk
+uv run python scripts/api_drift.py            # compare against api-fingerprint.json
+uv run python scripts/api_drift.py --update   # refresh the fingerprint after adapting to changes
 ```
 
-V `api-fingerprint.json` je uložený **otisk povrchu API** — cesty, parametry,
-jejich typy, enumerace a limity, plus schéma autentizace. Není to kopie
-specifikací, ale odvozený popis rozhraní, takže diff ukazuje přesně to, na čem
-tomuhle serveru záleží.
+`api-fingerprint.json` stores a **fingerprint of the API surface** — paths, parameters, their types,
+enumerations and limits, plus the auth scheme. It is not a copy of the specs but a derived description of the
+interface, so a diff shows exactly what this server cares about.
 
-Workflow `Hlídač REST API Mapy.com` běží každé pondělí. Když se rozhraní změní,
-job spadne a založí issue s diffem (nebo přidá komentář k už otevřenému).
+The `Mapy.com REST API watcher` workflow runs every Monday. When the interface changes the job fails and opens
+an issue with the diff (or comments on an already-open one).
 
-## Vydání
+## Releasing
 
-Publikuje se přes [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/),
-takže v repozitáři není žádný API token.
+Publishing goes through [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/), so there is no
+API token in the repository.
 
-Jednorázové nastavení:
+One-time setup:
 
-1. Na PyPI založte projekt `mapy-cz-mcp-server-unofficial` a v jeho nastavení
-   přidejte vydavatele: repozitář `xxBedy/mapy-cz-mcp-server-unofficial`,
-   workflow `release.yml`, prostředí `pypi`.
-2. V GitHubu vytvořte prostředí `pypi` (Settings → Environments).
+1. On PyPI, register a pending publisher for `mapy-cz-mcp-server-unofficial`: repository
+   `xxBedy/mapy-cz-mcp-server-unofficial`, workflow `release.yml`, environment `pypi`.
+2. On GitHub, create the `pypi` environment (Settings → Environments).
 
-Každé další vydání:
+Each release:
 
 ```bash
-# 1. zvedněte version v pyproject.toml
-# 2. otagujte — tag musí odpovídat verzi, jinak workflow spadne
+# 1. bump version in pyproject.toml
+# 2. tag it — the tag must match the version, or the workflow fails
 git tag v0.1.0 && git push origin v0.1.0
 ```
 
-Workflow `release.yml` spustí celé CI, sestaví balíček a publikuje ho.
+The `release.yml` workflow runs the full CI, builds the package and publishes it.
 
-## Licence
+## Contributing
 
-MIT — viz [LICENSE](LICENSE). Licence se vztahuje na kód tohoto serveru, ne na mapová data,
-která podléhají [podmínkám Mapy.com](https://developer.mapy.com/terms-and-conditions/).
+Contributions are welcome! Read [CONTRIBUTING.md](CONTRIBUTING.md) (how to set up your environment, run tests
+and open a PR) and the [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Report vulnerabilities per
+[SECURITY.md](SECURITY.md). Notable changes are tracked in [CHANGELOG.md](CHANGELOG.md).
+
+## License
+
+MIT — see [LICENSE](LICENSE). The license covers this server's code, not the map data, which is subject to the
+[Mapy.com terms](https://developer.mapy.com/en/terms-and-conditions/).

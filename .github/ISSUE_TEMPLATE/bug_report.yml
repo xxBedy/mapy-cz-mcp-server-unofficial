@@ -1,0 +1,50 @@
+name: Bug report
+description: Report a problem with the MCP server
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report! 🇨🇿 Klidně piš česky.
+        **Do not paste your `MAPY_API_KEY` or any secret** into this issue.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+      placeholder: Calling `mapy_route` with … returned … but I expected …
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Configure the server with …
+        2. Call tool … with arguments …
+        3. See error …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Package version (`uvx mapy-cz-mcp-server-unofficial` / pip) or git commit.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: "3.12"
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Paste any error output. Redact secrets first.
+      render: shell
+    validations:
+      required: false
