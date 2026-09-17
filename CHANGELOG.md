@@ -7,13 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-17
+
 ### Added
 - New tool `mapy_elevation_profile_image`: renders a route's elevation profile as an
   SVG image (area + line chart, km/m axes, red peak marker, baked-in attribution).
   No new dependencies — the SVG is assembled as a string.
-- English `README.md` (primary) alongside the Czech `README.cs.md`.
-- Community health files: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, issue/PR templates.
-- `py.typed` marker so the package ships type hints to consumers.
 
 ## [0.1.0] - 2026-09-17
 
@@ -26,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Credit budgeting, rate limiting, and header-only API-key handling.
 - API drift watcher (`scripts/api_drift.py` + weekly workflow) against `api-fingerprint.json`.
 - CI (lint, format, tests on Python 3.10–3.13, build) and PyPI Trusted Publishing release workflow.
+- English `README.md` (primary) alongside the Czech `README.cs.md`.
+- Community health files: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, issue/PR templates.
+- `py.typed` marker so the package ships type hints to consumers.
 
-[Unreleased]: https://github.com/xxBedy/mapy-cz-mcp-server-unofficial/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/xxBedy/mapy-cz-mcp-server-unofficial/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/xxBedy/mapy-cz-mcp-server-unofficial/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/xxBedy/mapy-cz-mcp-server-unofficial/releases/tag/v0.1.0
