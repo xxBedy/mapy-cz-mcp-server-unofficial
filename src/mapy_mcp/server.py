@@ -249,6 +249,49 @@ def create_server() -> MCPServer:
             )
 
     @server.tool(
+        title="Výškový profil trasy jako obrázek",
+        description=(
+            "Naplánuje trasu a vykreslí její výškový profil jako SVG obrázek, který si "
+            "můžete prohlédnout — plocha pod křivkou, osy ve km a metrech, červeně "
+            "vyznačený nejvyšší bod. Navazuje na mapy_elevation_profile (ten vrací čísla). "
+            "output='file' uloží obrázek na disk místo vložení do konverzace. "
+            "Atribuce je vypálená v obrázku. Cena 8+ kreditů (routing + výšky, "
+            "'detailed' víc)."
+        ),
+    )
+    async def mapy_elevation_profile_image(
+        start: PlaceInput,
+        end: PlaceInput,
+        route_type: Annotated[
+            routing_tools.RouteType, Field(description="Výchozí je pěší turistická trasa.")
+        ] = "foot_hiking",
+        accuracy: Annotated[
+            elevation_tools.Accuracy,
+            Field(description="'fast' = 1 volání výšky, 'detailed' = až 4 (přesnější, dražší)."),
+        ] = "fast",
+        output: elevation_tools.ImageOutput = "image",
+        width: Annotated[int, Field(ge=200, le=2000, description="Šířka obrázku v px.")] = 1000,
+        height: Annotated[int, Field(ge=120, le=1000, description="Výška obrázku v px.")] = 300,
+        title: Annotated[
+            str | None, Field(description="Volitelný titulek vypálený do obrázku.")
+        ] = None,
+        lang: Lang | None = None,
+    ) -> list[Image | str]:
+        async with client() as c:
+            return await elevation_tools.elevation_profile_image(
+                c,
+                start,
+                end,
+                route_type=route_type,
+                accuracy=accuracy,
+                output=output,
+                width=width,
+                height=height,
+                title=title,
+                lang=lang,
+            )
+
+    @server.tool(
         title="Obrázek mapy",
         description=(
             "Vrátí obrázek mapy, který si můžete prohlédnout. Nejjednodušší použití je "

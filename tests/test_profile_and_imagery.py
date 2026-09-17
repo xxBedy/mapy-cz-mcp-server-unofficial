@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import httpx
+import pytest
 import respx
 from mcp.server.mcpserver import Image
 
+from mapy_mcp.http.errors import MapyError
 from mapy_mcp.lib.coords import Coord
 from mapy_mcp.lib.polyline import decode
 from mapy_mcp.lib.resample import resample
-from mapy_mcp.tools.elevation import elevation_profile
+from mapy_mcp.tools.elevation import elevation_profile, elevation_profile_image
 from mapy_mcp.tools.imagery import static_map
 
 
@@ -108,3 +110,96 @@ async def test_static_map_url_output_costs_nothing(client):
     assert "https://api.mapy.com/v1/static/map" in out[0]
     # Klíč se do sestaveného URL nesmí dostat.
     assert "test-key" not in out[0]
+
+
+def _mock_profile(elevations):
+    """Namockuje route (stoupavou trasu) i elevation s danými výškami."""
+    track = [(50.0 + i / 1000, 14.0) for i in range(300)]
+    respx.get("https://api.mapy.com/v1/routing/route").mock(
+        return_value=httpx.Response(
+            200, json={"length": 33000, "duration": 28800, "geometry": _encode(track)}
+        )
+    )
+    respx.get("https://api.mapy.com/v1/elevation").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "items": [
+                    {"elevation": e, "position": {"lon": 14.0, "lat": 50.0}} for e in elevations
+                ]
+            },
+        )
+    )
+
+
+@respx.mock
+async def test_elevation_profile_image_file_output(client, tmp_path, monkeypatch):
+    # Obrázek ať padne do tmp_path, ať ho jde přečíst a ověřit obsah SVG.
+    from pathlib import Path
+
+    from mapy_mcp.config import reset_settings
+
+    monkeypatch.setenv("MAPY_IMAGE_DIR", str(tmp_path))
+    reset_settings()
+    _mock_profile([300.0, 520.0, 410.0])
+
+    try:
+        out = await elevation_profile_image(
+            client,
+            Coord(lat=50.0, lon=14.0),
+            Coord(lat=50.3, lon=14.0),
+            output="file",
+            width=900,
+            height=280,
+        )
+
+        summary = out[0]
+        assert "Uloženo:" in summary
+        # Cena = routing (4) + 1× elevation (4), start i cíl jsou souřadnice → bez geokódování.
+        assert "Cena: 8.0 kreditů" in summary
+        assert "Mapy.com © Seznam.cz a.s. a další" in summary
+
+        path = summary.split("Uloženo:", 1)[1].split("\n", 1)[0].strip()
+        assert str(tmp_path) in path
+        svg = Path(path).read_text(encoding="utf-8")
+        assert "<svg" in svg
+        assert "polyline" in svg and "polygon" in svg
+        assert 'width="900"' in svg and 'height="280"' in svg
+        # Vypálená atribuce a popisek nejvyššího bodu (520 m).
+        assert "Mapy.com © Seznam.cz a.s. a další" in svg
+        assert "520 m" in svg
+    finally:
+        reset_settings()
+
+
+@respx.mock
+async def test_elevation_profile_image_returns_image_content(client):
+    _mock_profile([300.0, 500.0, 400.0])
+
+    out = await elevation_profile_image(
+        client, Coord(lat=50.0, lon=14.0), Coord(lat=50.3, lon=14.0), title="Trek"
+    )
+
+    assert isinstance(out[0], Image)
+    assert out[0]._mime_type == "image/svg+xml"
+    assert "Cena: 8.0 kreditů" in out[1]
+    assert "Mapy.com © Seznam.cz a.s. a další" in out[1]
+
+
+@respx.mock
+async def test_elevation_profile_image_no_data_raises(client):
+    # Samá výška „no data" (sentinel) → není z čeho profil vykreslit.
+    _mock_profile([-100000.0, -100000.0, -100000.0])
+
+    with pytest.raises(MapyError, match="výškových dat"):
+        await elevation_profile_image(client, Coord(lat=50.0, lon=14.0), Coord(lat=50.3, lon=14.0))
+
+
+@respx.mock
+async def test_elevation_profile_image_empty_geometry_raises(client):
+    respx.get("https://api.mapy.com/v1/routing/route").mock(
+        return_value=httpx.Response(200, json={"length": 0, "duration": 0, "geometry": ""})
+    )
+
+    with pytest.raises(MapyError, match="geometrii"):
+        await elevation_profile_image(client, Coord(lat=50.0, lon=14.0), Coord(lat=50.3, lon=14.0))

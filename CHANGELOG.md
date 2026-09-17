@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- New tool `mapy_elevation_profile_image`: renders a route's elevation profile as an
+  SVG image (area + line chart, km/m axes, red peak marker, baked-in attribution).
+  No new dependencies — the SVG is assembled as a string.
 - English `README.md` (primary) alongside the Czech `README.cs.md`.
 - Community health files: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, issue/PR templates.
 - `py.typed` marker so the package ships type hints to consumers.

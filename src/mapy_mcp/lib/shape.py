@@ -139,6 +139,32 @@ class ElevationProfileResult(BaseModel):
     cost: Cost
 
 
+class ElevationProfileImageResult(BaseModel):
+    """Metadata k vykreslenému výškovému profilu (pro output='file' a shrnutí).
+
+    Samotný obrázek se vrací jako MCP image content; tenhle model nese čísla,
+    která k němu patří.
+    """
+
+    start: str
+    end: str
+    route_type: str
+    width: int
+    height: int
+    length_m: int
+    length_km: float
+    samples: int = Field(description="Kolik bodů trasy bylo změřeno.")
+    min_m: float | None = None
+    max_m: float | None = None
+    ascent_m: int | None = Field(default=None, description="Součet stoupání ze vzorků.")
+    descent_m: int | None = Field(default=None, description="Součet klesání ze vzorků.")
+    data_gaps: int = 0
+    path: str | None = Field(default=None, description="Kam byl obrázek uložen (output='file').")
+    warnings: list[str] = Field(default_factory=list)
+    attribution: str = ATTRIBUTION
+    cost: Cost
+
+
 class TimezoneResult(BaseModel):
     timezone: str
     local_time: str

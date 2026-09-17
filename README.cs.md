@@ -49,6 +49,7 @@ claude mcp add mapy --env MAPY_API_KEY=váš_klíč -- uvx mapy-cz-mcp-server-un
 | `mapy_route_matrix` | Matice vzdáleností a časů mezi více body (max 100 buněk) | ~0,4 / buňku |
 | `mapy_elevation` | Nadmořská výška pro až 256 bodů | 4 |
 | `mapy_elevation_profile` | Výškový profil trasy: převýšení, klesání, sparkline | 8+ |
+| `mapy_elevation_profile_image` | Vykreslí výškový profil trasy jako SVG obrázek | 8+ |
 | `mapy_static_map` | Obrázek mapy s markery a tvary — model ho vidí | 4 |
 | `mapy_panorama` | Panoramatický snímek z místa | 4 |
 | `mapy_timezone` | Časové pásmo, místní čas a posun | 1 |

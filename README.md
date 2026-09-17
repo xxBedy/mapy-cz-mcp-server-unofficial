@@ -49,6 +49,7 @@ claude mcp add mapy --env MAPY_API_KEY=your_key -- uvx mapy-cz-mcp-server-unoffi
 | `mapy_route_matrix` | Distance/time matrix between multiple points (max 100 cells) | ~0.4 / cell |
 | `mapy_elevation` | Elevation for up to 256 points | 4 |
 | `mapy_elevation_profile` | Route elevation profile: ascent, descent, sparkline | 8+ |
+| `mapy_elevation_profile_image` | Render a route's elevation profile as an SVG image | 8+ |
 | `mapy_static_map` | A map image with markers and shapes — the model can see it | 4 |
 | `mapy_panorama` | A panoramic image from a place | 4 |
 | `mapy_timezone` | Time zone, local time and offset | 1 |
